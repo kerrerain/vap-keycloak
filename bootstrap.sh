@@ -63,3 +63,22 @@ chown -R keycloak:keycloak /opt/keycloak/
 # Start keycloak
 systemctl enable keycloak
 systemctl start keycloak
+
+# Certificates
+openssl genrsa -des3 -passout pass:admin -out /tmp/private-key.pem 2048 -noout
+openssl rsa -in /tmp/private-key.pem -passin pass:admin -out /tmp/private-key.pem
+openssl req -new -x509 -key /tmp/private-key.pem -out /tmp/vap-keycloak-org.pem -passin pass:admin -days 10950 \
+-subj "/C=FR/ST=France/L=Paris/O=Onepoint/OU=Delivery/CN=vap-keycloak.org/emailAddress=vap-keycloak@vagrant.com"
+
+# Apache
+dnf install -y httpd mod_ssl
+
+mkdir /etc/httpd/ssl
+cp /tmp/private-key.pem /tmp/vap-keycloak-org.pem /etc/httpd/ssl/
+cp /tmp/provisioning/apache/99-keycloak.conf /etc/httpd/conf.d/
+
+# Port 8009 for AJP is forbidden by default
+/usr/sbin/setsebool -P httpd_can_network_connect 1
+
+systemctl enable httpd
+systemctl start httpd

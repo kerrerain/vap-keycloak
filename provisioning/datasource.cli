@@ -20,4 +20,13 @@ end-if
     user-name="keycloak", password="keycloak", \
     use-java-context=true)
 
+if (outcome == success) of /subsystem=undertow/server=default-server/ajp-listener=ajpListener:read-resource
+    /subsystem=undertow/server=default-server/ajp-listener=ajpListener:remove
+end-if
+
+/subsystem=undertow/server=default-server/ajp-listener=ajpListener:add( \
+        socket-binding=ajp, \
+        enabled=true, \
+        scheme=https)
+
 stop-embedded-server
