@@ -8,7 +8,6 @@ function error_exit
 }
 
 # Postgresql
-
 dnf install -y https://download.postgresql.org/pub/repos/yum/10/fedora/fedora-27-x86_64/pgdg-fedora10-10-4.noarch.rpm
 dnf install -y postgresql10 postgresql10-server
 
@@ -48,6 +47,19 @@ cp /tmp/postgresql-42.2.2.jar /opt/keycloak
 /opt/keycloak/bin/jboss-cli.sh --file=/tmp/provisioning/datasource.cli
 /opt/keycloak/bin/add-user-keycloak.sh -u admin -p admin
 
-sudo chown -R vagrant /opt/keycloak/
-
 # Systemd
+mkdir /etc/keycloak
+cp /tmp/provisioning/keycloak/keycloak.conf /etc/keycloak/
+cp /tmp/provisioning/keycloak/keycloak.service /etc/systemd/system/
+cp /tmp/provisioning/keycloak/launch.sh /opt/keycloak/bin
+chmod 744 /opt/keycloak/bin/launch.sh
+restorecon /opt/keycloak/bin/launch.sh
+systemctl daemon-reload
+
+# User keycloak
+useradd keycloak
+chown -R keycloak:keycloak /opt/keycloak/
+
+# Start keycloak
+systemctl enable keycloak
+systemctl start keycloak

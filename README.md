@@ -17,3 +17,14 @@ The box is still under development. It is destroyed and created each time I need
 ```
 vagrant up
 ```
+
+## Keycloak service
+
+A systemd service has been created for keycloak. The service is enabled by default.
+
+```
+systemctl start keycloak
+systemctl stop keycloak
+systemctl disable keycloak
+...
+```
