@@ -1,0 +1,23 @@
+embed-server --std-out=echo --server-config=standalone.xml
+
+module add --name=org.postgres --resources=/tmp/postgresql-42.2.2.jar --dependencies=javax.api,javax.transaction.api
+
+if (outcome == success) of /subsystem=datasources/jdbc-driver=postgresql:read-resource
+    /subsystem=datasources/jdbc-driver=postgresql:remove
+end-if
+/subsystem=datasources/jdbc-driver=postgresql:add( \
+    driver-name=postgresql, \
+    driver-module-name=org.postgres, \
+    driver-xa-datasource-class-name=org.postgresql.xa.PGXADataSource)
+
+if (outcome == success) of /subsystem=datasources/data-source=KeycloakDS:read-resource
+    /subsystem=datasources/data-source=KeycloakDS:remove
+end-if
+/subsystem=datasources/data-source=KeycloakDS:add( \
+    jndi-name=java:jboss/datasources/KeycloakDS, \
+    driver-name=postgresql, \
+    connection-url="jdbc:postgresql://localhost/keycloak?currentSchema=public", \
+    user-name="keycloak", password="keycloak", \
+    use-java-context=true)
+
+stop-embedded-server
