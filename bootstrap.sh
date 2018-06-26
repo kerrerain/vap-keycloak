@@ -44,7 +44,7 @@ echo "Configuring JDBC driver..."
 wget -P /tmp https://jdbc.postgresql.org/download/postgresql-42.2.2.jar
 cp /tmp/postgresql-42.2.2.jar /opt/keycloak
 
-/opt/keycloak/bin/jboss-cli.sh --file=/tmp/provisioning/datasource.cli
+/opt/keycloak/bin/jboss-cli.sh --file=/tmp/provisioning/keycloak/configure.cli
 /opt/keycloak/bin/add-user-keycloak.sh -u admin -p admin
 
 # Systemd
