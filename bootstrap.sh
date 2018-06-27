@@ -8,12 +8,14 @@ function error_exit
 }
 
 # Postgresql
+echo "Installing postgresql10..."
+
 dnf install -y https://download.postgresql.org/pub/repos/yum/10/fedora/fedora-27-x86_64/pgdg-fedora10-10-4.noarch.rpm
 dnf install -y postgresql10 postgresql10-server
 
-echo "Installing postgresql10..."
-
 /usr/pgsql-10/bin/postgresql-10-setup initdb
+sed -i -- 's/ident/md5/g' /var/lib/pgsql/10/data/pg_hba.conf
+
 systemctl enable postgresql-10
 systemctl start postgresql-10
 
@@ -23,10 +25,11 @@ cat << EOF | su - postgres -c 'psql keycloak'
 CREATE USER keycloak WITH SUPERUSER PASSWORD 'keycloak';
 EOF
 
-sed -i -- 's/ident/md5/g' /var/lib/pgsql/10/data/pg_hba.conf
 systemctl restart postgresql-10
 
 # Keycloak archive
+echo "Installing keycloak..."
+
 dnf install -y wget java-1.8.0-openjdk
 
 # wget -P /tmp https://downloads.jboss.org/keycloak/${KEYCLOAK_VERSION}/keycloak-${KEYCLOAK_VERSION}.tar.gz
@@ -65,12 +68,16 @@ systemctl enable keycloak
 systemctl start keycloak
 
 # Certificates
+echo "Generating self-signed certificates..."
+
 openssl genrsa -des3 -passout pass:admin -out /tmp/private-key.pem 2048 -noout
 openssl rsa -in /tmp/private-key.pem -passin pass:admin -out /tmp/private-key.pem
 openssl req -new -x509 -key /tmp/private-key.pem -out /tmp/vap-keycloak-org.pem -passin pass:admin -days 10950 \
 -subj "/C=FR/ST=France/L=Paris/O=Onepoint/OU=Delivery/CN=vap-keycloak.org/emailAddress=vap-keycloak@vagrant.com"
 
 # Apache
+echo "Installing apache..."
+
 dnf install -y httpd mod_ssl
 
 mkdir /etc/httpd/ssl
