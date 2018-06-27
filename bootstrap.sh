@@ -25,17 +25,22 @@ cat << EOF | su - postgres -c 'psql keycloak'
 CREATE USER keycloak WITH SUPERUSER PASSWORD 'keycloak';
 EOF
 
-systemctl restart postgresql-10
-
 # Keycloak archive
 echo "Installing keycloak..."
 
 dnf install -y wget java-1.8.0-openjdk
 
 # wget -P /tmp https://downloads.jboss.org/keycloak/${KEYCLOAK_VERSION}/keycloak-${KEYCLOAK_VERSION}.tar.gz
+wget -P /tmp https://downloads.jboss.org/keycloak/${KEYCLOAK_VERSION}/keycloak-${KEYCLOAK_VERSION}.tar.gz.md5
+
 if [ ! -f "/tmp/keycloak-${KEYCLOAK_VERSION}.tar.gz" ];
 then
-  error_exit "Missing keycloak archive."
+  error_exit "Missing Keycloak archive."
+fi
+
+if ! echo "$(cat /tmp/keycloak-${KEYCLOAK_VERSION}.tar.gz.md5) /tmp/keycloak-${KEYCLOAK_VERSION}.tar.gz" | md5sum -c;
+then
+  error_exit "The Keycloak archive is not valid."
 fi
 
 tar -xzf /tmp/keycloak-${KEYCLOAK_VERSION}.tar.gz -C /opt
@@ -45,7 +50,6 @@ mv /opt/keycloak-${KEYCLOAK_VERSION} /opt/keycloak
 echo "Configuring JDBC driver..."
 
 wget -P /tmp https://jdbc.postgresql.org/download/postgresql-42.2.2.jar
-cp /tmp/postgresql-42.2.2.jar /opt/keycloak
 
 /opt/keycloak/bin/jboss-cli.sh --file=/tmp/provisioning/keycloak/configure.cli
 /opt/keycloak/bin/add-user-keycloak.sh -u admin -p admin
