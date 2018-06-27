@@ -18,7 +18,11 @@ end-if
     driver-name=postgresql, \
     connection-url="jdbc:postgresql://localhost/keycloak?currentSchema=public", \
     user-name="keycloak", password="keycloak", \
-    use-java-context=true)
+    use-java-context=true, \
+    check-valid-connection-sql="select 1", \
+    validate-on-match=false, \
+    background-validation=true, \
+    background-validation-millis=10000)
 
 if (outcome == success) of /subsystem=undertow/server=default-server/ajp-listener=ajpListener:read-resource
     /subsystem=undertow/server=default-server/ajp-listener=ajpListener:remove
